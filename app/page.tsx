@@ -216,6 +216,7 @@ export default function Home() {
       if (!form.ciudad.trim()) return "Ingresa tu ciudad";
       if (!form.cumpleanos) return "Ingresa tu fecha de nacimiento";
       if (!form.estado_civil) return "Selecciona tu estado civil";
+      if (!form.grupo) return "Selecciona tu grupo / cohorte";
     }
     if (step === 1 && !form.situacion_familiar) return "Selecciona una opción";
     if (step === 2 && !form.situacion_laboral) return "Selecciona una opción";
@@ -345,7 +346,7 @@ export default function Home() {
               <Field label="LinkedIn">
                 <TextInput placeholder="linkedin.com/in/tu-perfil" value={form.linkedin} onChange={setE("linkedin")} />
               </Field>
-              <Field label="Grupo / Cohorte">
+              <Field label="Grupo / Cohorte" required>
                 <SelectInput value={form.grupo} onChange={setE("grupo")}>
                   <option value="">Seleccionar</option>
                   {GRUPOS.map((g) => <option key={g}>{g}</option>)}
