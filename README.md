@@ -29,12 +29,14 @@ docs/
 
 ## Cómo funciona
 
-1. El usuario completa el formulario en 5 pasos (`app/page.tsx`):
+1. El usuario completa el formulario en 7 pasos (`app/page.tsx`):
    1. Datos personales
    2. Situación familiar
    3. Situación laboral (con preguntas condicionales según dependiente / independiente)
    4. Perfil profesional (opcional)
    5. Momento de vida
+   6. Acuerdo de confidencialidad (NDA) — aceptación obligatoria
+   7. Autorización de uso de imagen y voz — Acepto / No acepto
 2. Al enviar, el cliente hace `POST /api/submit` con el formulario en JSON.
 3. El Route Handler (`app/api/submit/route.ts`) genera un `id` (`LSM-<timestamp>`) y una marca de tiempo, arma la fila y llama a `appendToSheet()`.
 4. `lib/sheets.ts` se autentica con una cuenta de servicio de Google y añade la fila a la hoja (`Sheet1!A:Z`).
@@ -42,7 +44,9 @@ docs/
 
 Los campos se escriben en la hoja en este orden:
 
-`id`, `fecha`, `nombres`, `apellidos`, `dni`, `email`, `telefono`, `pais`, `ciudad`, `cumpleanos`, `linkedin`, `grupo`, `estado_civil`, `situacion_familiar`, `situacion_laboral`, `tipo_trabajo`, `tipo_trabajo_otro`, `perfil_profesional`, `perfil_otro`, `momento_vida`.
+`id`, `fecha`, `nombres`, `apellidos`, `dni`, `email`, `telefono`, `pais`, `ciudad`, `cumpleanos`, `linkedin`, `grupo`, `estado_civil`, `situacion_familiar`, `situacion_laboral`, `tipo_trabajo`, `tipo_trabajo_otro`, `perfil_profesional`, `perfil_otro`, `momento_vida`, `acepta_nda`, `acepta_imagen`.
+
+Los dos últimos campos registran la aceptación del **Acuerdo de Confidencialidad** (`acepta_nda`: `Sí`) y de la **Autorización de uso de imagen y voz** (`acepta_imagen`: `Acepto` / `No acepto`). Los textos legales se muestran al miembro en los pasos finales del formulario y viven en [`lib/legal.ts`](lib/legal.ts). La vigencia de la autorización de imagen (12 meses) se cuenta desde la `fecha` del registro.
 
 ## Variables de entorno
 

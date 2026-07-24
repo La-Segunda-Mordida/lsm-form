@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { NDA, AUTORIZACION_IMAGEN } from "@/lib/legal";
 
 type FormData = {
   nombres: string;
@@ -23,6 +24,8 @@ type FormData = {
   perfil_profesional: string;
   perfil_otro: string;
   momento_vida: string;
+  acepta_nda: string;
+  acepta_imagen: string;
 };
 
 const STEPS = [
@@ -31,6 +34,8 @@ const STEPS = [
   "Situación laboral",
   "Perfil profesional",
   "Momento de vida",
+  "Acuerdo de confidencialidad",
+  "Uso de imagen y voz",
 ];
 
 const ESTADOS_CIVILES = ["Soltero(a)", "Casado(a)", "Divorciado(a)", "Viudo(a)", "Conviviente", "Otro"];
@@ -92,8 +97,20 @@ const empty: FormData = {
   pais: "", ciudad: "", cumpleanos: "", linkedin: "", grupo: "",
   estado_civil: "", situacion_familiar: "", situacion_laboral: "",
   tipo_trabajo: "", tipo_trabajo_otro: "", perfil_profesional: "",
-  perfil_otro: "", momento_vida: "",
+  perfil_otro: "", momento_vida: "", acepta_nda: "", acepta_imagen: "",
 };
+
+function LegalBox({ parrafos }: { parrafos: string[] }) {
+  return (
+    <div className="max-h-60 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-3">
+      {parrafos.map((p, i) => (
+        <p key={i} className="text-xs text-gray-600 leading-relaxed text-justify">
+          {p}
+        </p>
+      ))}
+    </div>
+  );
+}
 
 function RadioGroup({ options, value, onChange, name }: {
   options: string[];
@@ -197,6 +214,10 @@ export default function Home() {
     }
     if (step === 1 && !form.situacion_familiar) return "Selecciona una opción";
     if (step === 2 && !form.situacion_laboral) return "Selecciona una opción";
+    if (step === 5 && form.acepta_nda !== "Sí")
+      return "Debes aceptar el Acuerdo de Confidencialidad para continuar";
+    if (step === 6 && !form.acepta_imagen)
+      return "Selecciona una opción sobre el uso de imagen y voz";
     return "";
   }
 
@@ -215,6 +236,8 @@ export default function Home() {
   }
 
   async function submit() {
+    const err = validateStep();
+    if (err) { setError(err); return; }
     setLoading(true);
     setError("");
     try {
@@ -405,6 +428,64 @@ export default function Home() {
                 name="momento_vida"
               />
             </Field>
+          )}
+
+          {/* Step 5 — Acuerdo de confidencialidad (NDA) */}
+          {step === 5 && (
+            <div className="space-y-4">
+              <LegalBox parrafos={NDA.parrafos} />
+              <label
+                className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                  form.acepta_nda === "Sí"
+                    ? "border-lsm-dark bg-orange-50"
+                    : "border-gray-200 hover:border-gray-300 bg-white"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={form.acepta_nda === "Sí"}
+                  onChange={(e) => set("acepta_nda")(e.target.checked ? "Sí" : "")}
+                  className="mt-0.5 accent-orange-600 shrink-0"
+                />
+                <span className="text-sm text-gray-700 leading-snug font-medium">
+                  {NDA.checkbox} <span className="text-red-600">*</span>
+                </span>
+              </label>
+            </div>
+          )}
+
+          {/* Step 6 — Autorización de uso de imagen y voz */}
+          {step === 6 && (
+            <div className="space-y-4">
+              <LegalBox parrafos={AUTORIZACION_IMAGEN.parrafos} />
+              <Field label="Selecciona una opción" required>
+                <div className="space-y-2">
+                  {[
+                    { value: "Acepto", label: AUTORIZACION_IMAGEN.opciones.acepta },
+                    { value: "No acepto", label: AUTORIZACION_IMAGEN.opciones.rechaza },
+                  ].map((opt) => (
+                    <label
+                      key={opt.value}
+                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                        form.acepta_imagen === opt.value
+                          ? "border-lsm-dark bg-orange-50"
+                          : "border-gray-200 hover:border-gray-300 bg-white"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="acepta_imagen"
+                        value={opt.value}
+                        checked={form.acepta_imagen === opt.value}
+                        onChange={() => set("acepta_imagen")(opt.value)}
+                        className="mt-0.5 accent-orange-600 shrink-0"
+                      />
+                      <span className="text-sm text-gray-700 leading-snug">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </Field>
+            </div>
           )}
 
           {/* Error */}

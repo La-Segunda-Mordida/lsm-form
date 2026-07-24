@@ -29,6 +29,8 @@ export async function POST(req: NextRequest) {
       data.perfil_profesional || "",
       data.perfil_otro || "",
       data.momento_vida || "",
+      data.acepta_nda || "",
+      data.acepta_imagen || "",
     ];
 
     await appendToSheet([row]);
