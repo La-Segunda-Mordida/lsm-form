@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# La Segunda Mordida — Formulario de registro
 
-## Getting Started
+Formulario web de registro de miembros de **La Segunda Mordida (LSM)**. Recoge los datos del postulante en un flujo guiado de varios pasos y los guarda automáticamente en una hoja de Google Sheets a través de una cuenta de servicio.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Next.js 16** (App Router, Turbopack) + **React 19**
+- **TypeScript**
+- **Tailwind CSS 4**
+- **googleapis** (Google Sheets API v4) para la persistencia
+- Despliegue en **Vercel**
+
+## Estructura del proyecto
+
+```
+app/
+  layout.tsx          Layout raíz, tipografías (Anton, Kanit) y metadatos
+  page.tsx            Formulario multi-paso (client component)
+  success/page.tsx    Pantalla de confirmación tras el envío
+  api/submit/route.ts Route Handler (POST) que recibe el formulario
+  globals.css         Tema y variables de color de marca (LSM)
+lib/
+  sheets.ts           Cliente de Google Sheets: appendToSheet()
+public/
+  logo.png            Logotipo de la marca
+docs/
+  DESPLIEGUE.md       Guía de configuración de Google Sheets y despliegue
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Cómo funciona
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. El usuario completa el formulario en 5 pasos (`app/page.tsx`):
+   1. Datos personales
+   2. Situación familiar
+   3. Situación laboral (con preguntas condicionales según dependiente / independiente)
+   4. Perfil profesional (opcional)
+   5. Momento de vida
+2. Al enviar, el cliente hace `POST /api/submit` con el formulario en JSON.
+3. El Route Handler (`app/api/submit/route.ts`) genera un `id` (`LSM-<timestamp>`) y una marca de tiempo, arma la fila y llama a `appendToSheet()`.
+4. `lib/sheets.ts` se autentica con una cuenta de servicio de Google y añade la fila a la hoja (`Sheet1!A:Z`).
+5. En éxito el usuario es redirigido a `/success`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Los campos se escriben en la hoja en este orden:
 
-## Learn More
+`id`, `fecha`, `nombres`, `apellidos`, `dni`, `email`, `telefono`, `pais`, `ciudad`, `cumpleanos`, `linkedin`, `grupo`, `estado_civil`, `situacion_familiar`, `situacion_laboral`, `tipo_trabajo`, `tipo_trabajo_otro`, `perfil_profesional`, `perfil_otro`, `momento_vida`.
 
-To learn more about Next.js, take a look at the following resources:
+## Variables de entorno
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Copia `.env.local.example` a `.env.local` y completa los valores:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Variable | Descripción |
+|----------|-------------|
+| `GOOGLE_SHEET_ID` | ID de la hoja de cálculo destino (parte de la URL de Google Sheets) |
+| `GOOGLE_CLIENT_EMAIL` | Email de la cuenta de servicio de Google |
+| `GOOGLE_PRIVATE_KEY` | Clave privada de la cuenta de servicio (con `\n` escapados) |
 
-## Deploy on Vercel
+La hoja debe estar compartida con el email de la cuenta de servicio con permiso de edición. Ver [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md) para el paso a paso.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+> Los archivos `.env*` están en `.gitignore` y nunca deben subirse al repositorio.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Desarrollo local
+
+```bash
+npm install
+cp .env.local.example .env.local   # y completa los valores
+npm run dev
+```
+
+Abre [http://localhost:3000](http://localhost:3000).
+
+### Scripts
+
+| Script | Acción |
+|--------|--------|
+| `npm run dev` | Servidor de desarrollo (Turbopack) |
+| `npm run build` | Build de producción |
+| `npm run start` | Sirve el build de producción |
+| `npm run lint` | ESLint |
+
+## Despliegue
+
+El proyecto está desplegado en Vercel. Las tres variables de entorno anteriores deben configurarse en **Vercel → Project → Settings → Environment Variables**. Consulta [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md) para la configuración completa de Google Cloud y la conexión con Git.
+
+## Licencia
+
+Proyecto privado de La Segunda Mordida. Todos los derechos reservados.
