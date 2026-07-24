@@ -92,6 +92,11 @@ const PAISES = [
   "Uruguay", "Paraguay", "Venezuela", "España", "Estados Unidos", "Otro",
 ];
 
+const GRUPOS = [
+  "G1 Wise",
+  ...Array.from({ length: 19 }, (_, i) => `G${i + 2}`), // G2 … G20
+];
+
 const empty: FormData = {
   nombres: "", apellidos: "", dni: "", email: "", telefono: "",
   pais: "", ciudad: "", cumpleanos: "", linkedin: "", grupo: "",
@@ -341,7 +346,10 @@ export default function Home() {
                 <TextInput placeholder="linkedin.com/in/tu-perfil" value={form.linkedin} onChange={setE("linkedin")} />
               </Field>
               <Field label="Grupo / Cohorte">
-                <TextInput placeholder="Grupo A" value={form.grupo} onChange={setE("grupo")} />
+                <SelectInput value={form.grupo} onChange={setE("grupo")}>
+                  <option value="">Seleccionar</option>
+                  {GRUPOS.map((g) => <option key={g}>{g}</option>)}
+                </SelectInput>
               </Field>
             </>
           )}
