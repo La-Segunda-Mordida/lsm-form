@@ -31,6 +31,10 @@ export async function POST(req: NextRequest) {
       data.momento_vida || "",
       data.acepta_nda || "",
       data.acepta_imagen || "",
+      Array.isArray(data.sectores) ? data.sectores.join("; ") : (data.sectores || ""),
+      data.sectores_otro || "",
+      data.ultimo_cargo || "",
+      data.acepta_permanencia || "",
     ];
 
     await appendToSheet([row]);

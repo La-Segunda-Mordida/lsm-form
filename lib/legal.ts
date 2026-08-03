@@ -26,3 +26,9 @@ export const AUTORIZACION_IMAGEN = {
     rechaza: "No acepto el uso de mi imagen y voz.",
   },
 };
+
+export const PERMANENCIA = {
+  titulo: "Compromiso de permanencia",
+  checkbox:
+    "Acepto que, en caso de retirarme antes de cumplir 3 meses desde la fecha de mi inscripción, se efectuará el cobro de la mensualidad de S/ 550.00 correspondiente al workbook de La Segunda Mordida.",
+};

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { NDA, AUTORIZACION_IMAGEN } from "@/lib/legal";
+import { NDA, AUTORIZACION_IMAGEN, PERMANENCIA } from "@/lib/legal";
 
 type FormData = {
   nombres: string;
@@ -24,18 +24,24 @@ type FormData = {
   perfil_profesional: string;
   perfil_otro: string;
   momento_vida: string;
+  sectores: string[];
+  sectores_otro: string;
+  ultimo_cargo: string;
   acepta_nda: string;
   acepta_imagen: string;
+  acepta_permanencia: string;
 };
 
 const STEPS = [
   "Datos personales",
   "Situación familiar",
   "Situación laboral",
+  "Experiencia profesional",
   "Perfil profesional",
   "Momento de vida",
   "Acuerdo de confidencialidad",
   "Uso de imagen y voz",
+  "Compromiso de permanencia",
 ];
 
 const ESTADOS_CIVILES = ["Soltero(a)", "Casado(a)", "Divorciado(a)", "Viudo(a)", "Conviviente", "Otro"];
@@ -97,12 +103,45 @@ const GRUPOS = [
   ...Array.from({ length: 19 }, (_, i) => `G${i + 2}`), // G2 … G20
 ];
 
+const SECTOR_OTRO = "Otro (especifique)";
+
+const SECTORES = [
+  "Agricultura, ganadería y pesca",
+  "Minería e hidrocarburos",
+  "Manufactura y producción industrial",
+  "Construcción e infraestructura",
+  "Energía y servicios públicos",
+  "Transporte y logística",
+  "Comercio minorista (retail)",
+  "Comercio mayorista y distribución",
+  "Tecnología de la información y software",
+  "Telecomunicaciones",
+  "Banca, seguros y servicios financieros",
+  "Consultoría y servicios profesionales",
+  "Educación y capacitación",
+  "Salud y ciencias de la vida",
+  "Farmacéutica y biotecnología",
+  "Gobierno y sector público",
+  "Organizaciones sin fines de lucro / ONG",
+  "Recursos humanos y reclutamiento",
+  "Marketing, publicidad y medios",
+  "Entretenimiento, cultura y deportes",
+  "Turismo, hotelería y gastronomía",
+  "Bienes raíces e inmobiliario",
+  "Servicios legales",
+  "Servicios de seguridad",
+  "Medio ambiente y sostenibilidad",
+  "Comercio electrónico (e-commerce)",
+  SECTOR_OTRO,
+];
+
 const empty: FormData = {
   nombres: "", apellidos: "", dni: "", email: "", telefono: "",
   pais: "", ciudad: "", cumpleanos: "", linkedin: "", grupo: "",
   estado_civil: "", situacion_familiar: "", situacion_laboral: "",
   tipo_trabajo: "", tipo_trabajo_otro: "", perfil_profesional: "",
-  perfil_otro: "", momento_vida: "", acepta_nda: "", acepta_imagen: "",
+  perfil_otro: "", momento_vida: "", sectores: [], sectores_otro: "",
+  ultimo_cargo: "", acepta_nda: "", acepta_imagen: "", acepta_permanencia: "",
 };
 
 function LegalBox({ parrafos }: { parrafos: string[] }) {
@@ -145,6 +184,38 @@ function RadioGroup({ options, value, onChange, name }: {
           <span className="text-sm text-gray-700 leading-snug">{opt}</span>
         </label>
       ))}
+    </div>
+  );
+}
+
+function CheckboxGroup({ options, values, onToggle }: {
+  options: string[];
+  values: string[];
+  onToggle: (v: string) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      {options.map((opt) => {
+        const checked = values.includes(opt);
+        return (
+          <label
+            key={opt}
+            className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+              checked
+                ? "border-lsm-dark bg-orange-50"
+                : "border-gray-200 hover:border-gray-300 bg-white"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={checked}
+              onChange={() => onToggle(opt)}
+              className="mt-0.5 accent-orange-600 shrink-0"
+            />
+            <span className="text-sm text-gray-700 leading-snug">{opt}</span>
+          </label>
+        );
+      })}
     </div>
   );
 }
@@ -198,6 +269,17 @@ export default function Home() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
+  const toggleSector = (opt: string) =>
+    setForm((f) => ({
+      ...f,
+      sectores: f.sectores.includes(opt)
+        ? f.sectores.filter((s) => s !== opt)
+        : [...f.sectores, opt],
+      // limpiar el "otro" si se destilda "Otro (especifique)"
+      sectores_otro:
+        opt === SECTOR_OTRO && f.sectores.includes(opt) ? "" : f.sectores_otro,
+    }));
+
   const tiposTrabajo =
     form.situacion_laboral === "Trabajo de manera dependiente"
       ? TIPOS_DEPENDIENTE
@@ -220,10 +302,18 @@ export default function Home() {
     }
     if (step === 1 && !form.situacion_familiar) return "Selecciona una opción";
     if (step === 2 && !form.situacion_laboral) return "Selecciona una opción";
-    if (step === 5 && form.acepta_nda !== "Sí")
+    if (step === 3) {
+      if (form.sectores.length === 0) return "Selecciona al menos un sector o industria";
+      if (form.sectores.includes(SECTOR_OTRO) && !form.sectores_otro.trim())
+        return "Especifica el sector en el campo \"Otro\"";
+      if (!form.ultimo_cargo.trim()) return "Ingresa tu último rol o cargo";
+    }
+    if (step === 6 && form.acepta_nda !== "Sí")
       return "Debes aceptar el Acuerdo de Confidencialidad para continuar";
-    if (step === 6 && !form.acepta_imagen)
+    if (step === 7 && !form.acepta_imagen)
       return "Selecciona una opción sobre el uso de imagen y voz";
+    if (step === 8 && form.acepta_permanencia !== "Sí")
+      return "Debes aceptar el compromiso de permanencia para enviar el registro";
     return "";
   }
 
@@ -404,8 +494,36 @@ export default function Home() {
             </div>
           )}
 
-          {/* Step 3 — Perfil profesional */}
+          {/* Step 3 — Experiencia profesional */}
           {step === 3 && (
+            <div className="space-y-5">
+              <Field label="¿En qué sectores o industrias has trabajado?" required>
+                <CheckboxGroup
+                  options={SECTORES}
+                  values={form.sectores}
+                  onToggle={toggleSector}
+                />
+                {form.sectores.includes(SECTOR_OTRO) && (
+                  <TextInput
+                    className="mt-2"
+                    placeholder="Especifica el sector..."
+                    value={form.sectores_otro}
+                    onChange={setE("sectores_otro")}
+                  />
+                )}
+              </Field>
+              <Field label="¿Cuál fue tu último rol o cargo desempeñado?" required>
+                <TextInput
+                  placeholder="Ej. Gerente de Marketing"
+                  value={form.ultimo_cargo}
+                  onChange={setE("ultimo_cargo")}
+                />
+              </Field>
+            </div>
+          )}
+
+          {/* Step 4 — Perfil profesional */}
+          {step === 4 && (
             <div className="space-y-5">
               <p className="text-xs text-gray-400 -mt-2">Opcional</p>
               <Field label="¿Cuál de los siguientes caminos te gustaría explorar o desarrollar en los próximos años?">
@@ -427,8 +545,8 @@ export default function Home() {
             </div>
           )}
 
-          {/* Step 4 — Momento de vida */}
-          {step === 4 && (
+          {/* Step 5 — Momento de vida */}
+          {step === 5 && (
             <Field label="Si tuvieras que describir tu etapa actual, ¿cuál de estas opciones se acerca más a ti?">
               <RadioGroup
                 options={MOMENTOS_VIDA}
@@ -439,8 +557,8 @@ export default function Home() {
             </Field>
           )}
 
-          {/* Step 5 — Acuerdo de confidencialidad (NDA) */}
-          {step === 5 && (
+          {/* Step 6 — Acuerdo de confidencialidad (NDA) */}
+          {step === 6 && (
             <div className="space-y-4">
               <LegalBox parrafos={NDA.parrafos} />
               <label
@@ -463,8 +581,8 @@ export default function Home() {
             </div>
           )}
 
-          {/* Step 6 — Autorización de uso de imagen y voz */}
-          {step === 6 && (
+          {/* Step 7 — Autorización de uso de imagen y voz */}
+          {step === 7 && (
             <div className="space-y-4">
               <LegalBox parrafos={AUTORIZACION_IMAGEN.parrafos} />
               <Field label="Selecciona una opción" required>
@@ -494,6 +612,29 @@ export default function Home() {
                   ))}
                 </div>
               </Field>
+            </div>
+          )}
+
+          {/* Step 8 — Compromiso de permanencia */}
+          {step === 8 && (
+            <div className="space-y-4">
+              <label
+                className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                  form.acepta_permanencia === "Sí"
+                    ? "border-lsm-dark bg-orange-50"
+                    : "border-gray-200 hover:border-gray-300 bg-white"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={form.acepta_permanencia === "Sí"}
+                  onChange={(e) => set("acepta_permanencia")(e.target.checked ? "Sí" : "")}
+                  className="mt-0.5 accent-orange-600 shrink-0"
+                />
+                <span className="text-sm text-gray-700 leading-snug font-medium">
+                  {PERMANENCIA.checkbox} <span className="text-red-600">*</span>
+                </span>
+              </label>
             </div>
           )}
 

@@ -29,14 +29,16 @@ docs/
 
 ## Cómo funciona
 
-1. El usuario completa el formulario en 7 pasos (`app/page.tsx`):
+1. El usuario completa el formulario en 9 pasos (`app/page.tsx`):
    1. Datos personales
    2. Situación familiar
    3. Situación laboral (con preguntas condicionales según dependiente / independiente)
-   4. Perfil profesional (opcional)
-   5. Momento de vida
-   6. Acuerdo de confidencialidad (NDA) — aceptación obligatoria
-   7. Autorización de uso de imagen y voz — Acepto / No acepto
+   4. Experiencia profesional — sectores/industrias (selección múltiple) y último cargo (ambos obligatorios)
+   5. Perfil profesional (opcional)
+   6. Momento de vida
+   7. Acuerdo de confidencialidad (NDA) — aceptación obligatoria
+   8. Autorización de uso de imagen y voz — Acepto / No acepto
+   9. Compromiso de permanencia (cobro de S/ 550 si se retira antes de 3 meses) — aceptación obligatoria
 2. Al enviar, el cliente hace `POST /api/submit` con el formulario en JSON.
 3. El Route Handler (`app/api/submit/route.ts`) genera un `id` (`LSM-<timestamp>`) y una marca de tiempo, arma la fila y llama a `appendToSheet()`.
 4. `lib/sheets.ts` se autentica con una cuenta de servicio de Google y añade la fila a la hoja (`Sheet1!A:Z`).
@@ -44,9 +46,17 @@ docs/
 
 Los campos se escriben en la hoja en este orden:
 
-`id`, `fecha`, `nombres`, `apellidos`, `dni`, `email`, `telefono`, `pais`, `ciudad`, `cumpleanos`, `linkedin`, `grupo`, `estado_civil`, `situacion_familiar`, `situacion_laboral`, `tipo_trabajo`, `tipo_trabajo_otro`, `perfil_profesional`, `perfil_otro`, `momento_vida`, `acepta_nda`, `acepta_imagen`.
+`id`, `fecha`, `nombres`, `apellidos`, `dni`, `email`, `telefono`, `pais`, `ciudad`, `cumpleanos`, `linkedin`, `grupo`, `estado_civil`, `situacion_familiar`, `situacion_laboral`, `tipo_trabajo`, `tipo_trabajo_otro`, `perfil_profesional`, `perfil_otro`, `momento_vida`, `acepta_nda`, `acepta_imagen`, `sectores`, `sectores_otro`, `ultimo_cargo`, `acepta_permanencia`.
 
-Los dos últimos campos registran la aceptación del **Acuerdo de Confidencialidad** (`acepta_nda`: `Sí`) y de la **Autorización de uso de imagen y voz** (`acepta_imagen`: `Acepto` / `No acepto`). Los textos legales se muestran al miembro en los pasos finales del formulario y viven en [`lib/legal.ts`](lib/legal.ts). La vigencia de la autorización de imagen (12 meses) se cuenta desde la `fecha` del registro.
+Campos de aceptación y experiencia:
+
+- `acepta_nda` (`Sí`): aceptación del **Acuerdo de Confidencialidad**.
+- `acepta_imagen` (`Acepto` / `No acepto`): **Autorización de uso de imagen y voz**. La vigencia (12 meses) se cuenta desde la `fecha` del registro.
+- `sectores`: sectores/industrias en los que ha trabajado (selección múltiple, unidos con `; `). `sectores_otro`: texto libre cuando marca "Otro (especifique)".
+- `ultimo_cargo`: último rol o cargo desempeñado (texto libre).
+- `acepta_permanencia` (`Sí`): aceptación del cobro de S/ 550.00 (workbook) si se retira antes de 3 meses.
+
+Los textos legales se muestran al miembro en los pasos finales del formulario y viven en [`lib/legal.ts`](lib/legal.ts).
 
 ## Variables de entorno
 
