@@ -505,7 +505,7 @@ export default function Home() {
                 />
                 {form.sectores.includes(SECTOR_OTRO) && (
                   <TextInput
-                    className="mt-2"
+                    className="mt-3"
                     placeholder="Especifica el sector..."
                     value={form.sectores_otro}
                     onChange={setE("sectores_otro")}
