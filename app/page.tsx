@@ -27,6 +27,7 @@ type FormData = {
   sectores: string[];
   sectores_otro: string;
   ultimo_cargo: string;
+  fractional: string;
   acepta_nda: string;
   acepta_imagen: string;
   acepta_permanencia: string;
@@ -39,6 +40,7 @@ const STEPS = [
   "Experiencia profesional",
   "Perfil profesional",
   "Momento de vida",
+  "Fractional",
   "Acuerdo de confidencialidad",
   "Uso de imagen y voz",
   "Compromiso de permanencia",
@@ -141,7 +143,8 @@ const empty: FormData = {
   estado_civil: "", situacion_familiar: "", situacion_laboral: "",
   tipo_trabajo: "", tipo_trabajo_otro: "", perfil_profesional: "",
   perfil_otro: "", momento_vida: "", sectores: [], sectores_otro: "",
-  ultimo_cargo: "", acepta_nda: "", acepta_imagen: "", acepta_permanencia: "",
+  ultimo_cargo: "", fractional: "", acepta_nda: "", acepta_imagen: "",
+  acepta_permanencia: "",
 };
 
 function LegalBox({ parrafos }: { parrafos: string[] }) {
@@ -308,11 +311,13 @@ export default function Home() {
         return "Especifica el sector en el campo \"Otro\"";
       if (!form.ultimo_cargo.trim()) return "Ingresa tu último rol o cargo";
     }
-    if (step === 6 && form.acepta_nda !== "Sí")
+    if (step === 6 && !form.fractional)
+      return "Selecciona una opción";
+    if (step === 7 && form.acepta_nda !== "Sí")
       return "Debes aceptar el Acuerdo de Confidencialidad para continuar";
-    if (step === 7 && !form.acepta_imagen)
+    if (step === 8 && !form.acepta_imagen)
       return "Selecciona una opción sobre el uso de imagen y voz";
-    if (step === 8 && form.acepta_permanencia !== "Sí")
+    if (step === 9 && form.acepta_permanencia !== "Sí")
       return "Debes aceptar el compromiso de permanencia para enviar el registro";
     return "";
   }
@@ -557,8 +562,20 @@ export default function Home() {
             </Field>
           )}
 
-          {/* Step 6 — Acuerdo de confidencialidad (NDA) */}
+          {/* Step 6 — Fractional */}
           {step === 6 && (
+            <Field label="¿Te gustaría ser fractional?" required>
+              <RadioGroup
+                options={["Sí", "No"]}
+                value={form.fractional}
+                onChange={set("fractional")}
+                name="fractional"
+              />
+            </Field>
+          )}
+
+          {/* Step 7 — Acuerdo de confidencialidad (NDA) */}
+          {step === 7 && (
             <div className="space-y-4">
               <LegalBox parrafos={NDA.parrafos} />
               <label
@@ -581,8 +598,8 @@ export default function Home() {
             </div>
           )}
 
-          {/* Step 7 — Autorización de uso de imagen y voz */}
-          {step === 7 && (
+          {/* Step 8 — Autorización de uso de imagen y voz */}
+          {step === 8 && (
             <div className="space-y-4">
               <LegalBox parrafos={AUTORIZACION_IMAGEN.parrafos} />
               <Field label="Selecciona una opción" required>
@@ -615,8 +632,8 @@ export default function Home() {
             </div>
           )}
 
-          {/* Step 8 — Compromiso de permanencia */}
-          {step === 8 && (
+          {/* Step 9 — Compromiso de permanencia */}
+          {step === 9 && (
             <div className="space-y-4">
               <label
                 className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${

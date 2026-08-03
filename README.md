@@ -29,16 +29,17 @@ docs/
 
 ## Cómo funciona
 
-1. El usuario completa el formulario en 9 pasos (`app/page.tsx`):
+1. El usuario completa el formulario en 10 pasos (`app/page.tsx`):
    1. Datos personales
    2. Situación familiar
    3. Situación laboral (con preguntas condicionales según dependiente / independiente)
    4. Experiencia profesional — sectores/industrias (selección múltiple) y último cargo (ambos obligatorios)
    5. Perfil profesional (opcional)
    6. Momento de vida
-   7. Acuerdo de confidencialidad (NDA) — aceptación obligatoria
-   8. Autorización de uso de imagen y voz — Acepto / No acepto
-   9. Compromiso de permanencia (cobro de S/ 550 si se retira antes de 3 meses) — aceptación obligatoria
+   7. Fractional — ¿Te gustaría ser fractional? (Sí / No, obligatoria)
+   8. Acuerdo de confidencialidad (NDA) — aceptación obligatoria
+   9. Autorización de uso de imagen y voz — Acepto / No acepto
+   10. Compromiso de permanencia (cobro de S/ 550 si se retira antes de 3 meses) — aceptación obligatoria
 2. Al enviar, el cliente hace `POST /api/submit` con el formulario en JSON.
 3. El Route Handler (`app/api/submit/route.ts`) genera un `id` (`LSM-<timestamp>`) y una marca de tiempo, arma la fila y llama a `appendToSheet()`.
 4. `lib/sheets.ts` se autentica con una cuenta de servicio de Google y añade la fila a la hoja (`Sheet1!A:Z`).
@@ -46,7 +47,7 @@ docs/
 
 Los campos se escriben en la hoja en este orden:
 
-`id`, `fecha`, `nombres`, `apellidos`, `dni`, `email`, `telefono`, `pais`, `ciudad`, `cumpleanos`, `linkedin`, `grupo`, `estado_civil`, `situacion_familiar`, `situacion_laboral`, `tipo_trabajo`, `tipo_trabajo_otro`, `perfil_profesional`, `perfil_otro`, `momento_vida`, `acepta_nda`, `acepta_imagen`, `sectores`, `sectores_otro`, `ultimo_cargo`, `acepta_permanencia`.
+`id`, `fecha`, `nombres`, `apellidos`, `dni`, `email`, `telefono`, `pais`, `ciudad`, `cumpleanos`, `linkedin`, `grupo`, `estado_civil`, `situacion_familiar`, `situacion_laboral`, `tipo_trabajo`, `tipo_trabajo_otro`, `perfil_profesional`, `perfil_otro`, `momento_vida`, `acepta_nda`, `acepta_imagen`, `sectores`, `sectores_otro`, `ultimo_cargo`, `acepta_permanencia`, `fractional`.
 
 Campos de aceptación y experiencia:
 
@@ -55,6 +56,7 @@ Campos de aceptación y experiencia:
 - `sectores`: sectores/industrias en los que ha trabajado (selección múltiple, unidos con `; `). `sectores_otro`: texto libre cuando marca "Otro (especifique)".
 - `ultimo_cargo`: último rol o cargo desempeñado (texto libre).
 - `acepta_permanencia` (`Sí`): aceptación del cobro de S/ 550.00 (workbook) si se retira antes de 3 meses.
+- `fractional` (`Sí` / `No`): si le gustaría ser fractional (pregunta previa a los acuerdos).
 
 Los textos legales se muestran al miembro en los pasos finales del formulario y viven en [`lib/legal.ts`](lib/legal.ts).
 

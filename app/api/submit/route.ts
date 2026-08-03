@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
       data.sectores_otro || "",
       data.ultimo_cargo || "",
       data.acepta_permanencia || "",
+      data.fractional || "",
     ];
 
     await appendToSheet([row]);
