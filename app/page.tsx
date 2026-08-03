@@ -235,11 +235,11 @@ function Field({ label, required, children }: {
   );
 }
 
-function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+function TextInput({ className = "", ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lsm-orange/20 focus:border-lsm-orange transition bg-white"
+      className={`w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lsm-orange/20 focus:border-lsm-orange transition bg-white ${className}`}
     />
   );
 }
@@ -505,7 +505,7 @@ export default function Home() {
                 />
                 {form.sectores.includes(SECTOR_OTRO) && (
                   <TextInput
-                    className="mt-3"
+                    className="mt-4"
                     placeholder="Especifica el sector..."
                     value={form.sectores_otro}
                     onChange={setE("sectores_otro")}
